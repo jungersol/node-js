@@ -8,12 +8,12 @@ const schema = mongoose.Schema(
         permission: {type: String},
         cretaed_by: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true
+            required: false
         }
     },
     {
         versionKey: false,
-        timestapms:{
+        timestamps:{
             createdAt: "created_at",
             updatedAt: "updated_at"
         }

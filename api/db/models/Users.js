@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const schema = mongoose.Schema(
     {
-        email: { type: String, required: true },
+        email: { type: String, unique: true },
         password: {type: String, require: true},
         is_active: {type: Boolean, default: true},
         first_name: String,
@@ -10,7 +10,7 @@ const schema = mongoose.Schema(
     },
     {
         versionKey: false,
-        timestapms:{
+        timestamps:{
             createdAt: "created_at",
             updatedAt: "updated_at"
         }
