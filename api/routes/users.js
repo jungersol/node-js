@@ -1,5 +1,5 @@
 var express = require('express');
-const bcyript = require("bcrypt");
+const bcyript = require("bcrypt-nodejs");
 const is_js = require("is_js");
 const Users = require('../db/models/Users');
 const UserRoles = require("../db/models/UserRoles");
@@ -8,6 +8,8 @@ const CustomError = require('../lib/Error');
 const Enum = require('../config/Enum');
 const is = require('is_js');
 const Roles = require('../db/models/Roles');
+const config = require("../config");
+const jwt = require("jwt-simple");
 var router = express.Router();
 
 /* GET users listing. */
@@ -182,9 +184,39 @@ router.post("/register", async function (req, res, next) {
     });
     res.status(Enum.HTTP_CODES.CREATED).json(Response.successResponse({ success: true }, Enum.HTTP_CODES.CREATED));
   } catch (error) {
+    
+
+  }
+});
+
+router.post("/auth", async function (req, res) {
+  try {
+    let {email, password} = req.body;
+    Users.validateFieldsBeforeAuth(email, password);
+    let user = await Users.findOne({ email });
+    if(!user){
+      throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation errror", "email or password wrong");
+    }
+    //user.validateFieldsBeforeAuth(email, password);
+    if (!user.validPassword(password)) throw new CustomError(Enum.HTTP_CODES.UNAUTHORIZED, "Validation error", "email or assword wrong");
+    let payload = {
+      id: user._id,
+      exp: parseInt(Date.now() / 1000) * config.JWT.EXPIRE_TIME
+    }
+    let token = jwt.encode(payload, config.JWT.SECRET);
+    let userData = {
+      _id: user._id,
+      email:user.email,
+      first_name: user.first_name,
+      last_name: user.last_name,
+
+    }
+    res.json(Response.successResponse({ token, user: userData }));
+    
+  } catch (error) {
     let errorResponse = Response.errorResponse(error);
     res.status(errorResponse.code).json(errorResponse);
-
+    
   }
 });
 
